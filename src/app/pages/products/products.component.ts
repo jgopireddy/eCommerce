@@ -1,8 +1,9 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { MasterService } from '../../service/master.service';
-import { ApiResponseModel, ICategory, IProduct } from '../../model/ApiResponseModel';
+import { ApiResponseModel, CartModel, Customer, ICategory, IProduct } from '../../model/ApiResponseModel';
 import { map, Observable, Subscription } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
+import { Constant } from '../../constant/constant';
 
 @Component({
   selector: 'app-products',
@@ -13,7 +14,7 @@ import { AsyncPipe } from '@angular/common';
 })
 export class ProductsComponent implements OnInit, OnDestroy{
   
-
+  
   subscriptionList : Subscription[] = [];
 
   masterService = inject(MasterService);
@@ -55,6 +56,20 @@ export class ProductsComponent implements OnInit, OnDestroy{
       this.masterService.getAllProductsByCategoryId(categoryId).subscribe((result : ApiResponseModel) => {
         //this.productList = result.data;
         this.productList.set(result.data);
+      })
+    );
+  }
+
+  onAddToCart(productId: number){
+    const cartObj : CartModel = new CartModel();
+    cartObj.productId = productId;
+    cartObj.custId = this.masterService.loggedInUserData.custId;
+    this.subscriptionList.push(
+      this.masterService.addToCart(cartObj).subscribe((result : ApiResponseModel) => {
+        if(result.result){
+          this.masterService.onCartAdd.next(true);
+        }
+        alert(result.message);
       })
     );
   }

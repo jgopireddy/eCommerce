@@ -1,1 +1,12 @@
-<p>my-orders works!</p>
+<div class="container-fluid">
+    <h5>My Orders:</h5>
+    <div class="row">
+        <div class="col-12">
+            <div class="row">
+                @for (item of orderList; track $index) {
+                   <h5>{{item.saleId}}</h5>
+                }
+            </div>
+        </div>
+    </div>
+</div>

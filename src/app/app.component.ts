@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ApiResponseModel, Customer, Login } from './model/ApiResponseModel';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { ApiResponseModel, CartProductByCustomer, Customer, Login } from './model/ApiResponseModel';
 import { FormsModule } from '@angular/forms';
 import { MasterService } from './service/master.service';
 import { Constant } from './constant/constant';
@@ -8,7 +8,7 @@ import { Constant } from './constant/constant';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FormsModule],
+  imports: [RouterOutlet, FormsModule, RouterLink],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -19,19 +19,30 @@ export class AppComponent implements OnInit{
   registeredObj : Customer = new Customer();
   loginObj : Login = new Login();
 
-  loggedInUserData : Customer = new Customer();
+  
 
   @ViewChild("registerModel") registerModel : ElementRef | undefined;
   @ViewChild("loginModel") loginModel : ElementRef | undefined;
+  isCartPopupOpen: boolean = false;
 
   masterService = inject(MasterService);
+  cartProductList : CartProductByCustomer[] = [];
+
+  noOfCartItems : number = 0;
+  cartTotal : number = 0;
+  totalCartAmount : number = 0;
+  totalQty : number = 0;
 
   ngOnInit(): void {
     const loginUser = localStorage.getItem(Constant.LOCAL_KEY);
-    if(loginUser != null){
-      const parseObj = JSON.parse(loginUser);
-      this.loggedInUserData = parseObj;
+    if(this.masterService.loggedInUserData != null){
+      this.getCartItems();
     }
+    this.masterService.onCartAdd.subscribe((res:boolean) => {
+      if(res){
+        this.getCartItems();
+      }
+    })
   }
 
   openRegisterModel(){
@@ -73,7 +84,8 @@ export class AppComponent implements OnInit{
       if(result.result){
         localStorage.setItem(Constant.LOCAL_KEY, JSON.stringify(result.data));
         this.closeLoginModel();
-        this.loggedInUserData = result.data;
+        this.masterService.loggedInUserData = result.data;
+        this.getCartItems();
       }else{
         alert(result.message);
       }
@@ -81,6 +93,33 @@ export class AppComponent implements OnInit{
   }
   onLogout(){
     localStorage.removeItem(Constant.LOCAL_KEY);
-    this.loggedInUserData = new Customer();
+    this.masterService.loggedInUserData = new Customer();
+  }
+
+  showCartDetails(){
+    this.isCartPopupOpen = !this.isCartPopupOpen;
+  }
+
+  getCartItems(){
+    if(this.masterService.loggedInUserData != null){
+      this.masterService.getProductsByCustomerId(this.masterService.loggedInUserData.custId).subscribe((result : ApiResponseModel) => {
+        if(result.result){
+          this.cartProductList = result.data;
+          this.totalCartAmount = this.cartProductList.reduce((s, c) => s + c.productPrice, 0);
+          this.totalQty = this.cartProductList.reduce((s, c) => s + c.quantity, 0);
+        }else{
+          alert(result.message);
+        }
+      })
+    }
+  }
+  onRemoveProduct(cartId : number){
+    this.masterService.deleteProductFromCartById(cartId).subscribe((resp: ApiResponseModel) => {
+      if(!resp.result){
+        alert(resp.message);
+      }else{
+        this.getCartItems();
+      }
+    })
   }
 }

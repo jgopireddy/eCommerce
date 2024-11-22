@@ -18,7 +18,7 @@ export const routes: Routes = [
         component: CreateOrderComponent
     },
     {
-        path: 'my-order',
+        path: 'my-orders',
         component: MyOrdersComponent
     }
 ];
