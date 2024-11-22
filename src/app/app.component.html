@@ -55,8 +55,8 @@
             <button class="btn btn-success btn-sm" (click)="openLoginModel()">Login</button>
             <button class="btn btn-success btn-sm mx-2" (click)="openRegisterModel()">Register</button>
          } @else{
-            <button class="btn btn-success btn-sm">{{loggedInUserData.name}}</button>
-            <button class="btn btn-success btn-sm mx-2" (click)="onLogout()">Logout</button>
+            <button class="btn btn-primary btn-sm">{{loggedInUserData.name}}</button>
+            <button class="btn btn-warning btn-sm mx-2" (click)="onLogout()">Logout</button>
          }
          
         <a class="link-secondary me-3" href="#">

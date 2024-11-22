@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { ApiResponseModel, Customer, Login } from './model/ApiResponseModel';
 import { FormsModule } from '@angular/forms';
 import { MasterService } from './service/master.service';
+import { Constant } from './constant/constant';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,7 @@ export class AppComponent implements OnInit{
   masterService = inject(MasterService);
 
   ngOnInit(): void {
-    const loginUser = localStorage.getItem('eCom18');
+    const loginUser = localStorage.getItem(Constant.LOCAL_KEY);
     if(loginUser != null){
       const parseObj = JSON.parse(loginUser);
       this.loggedInUserData = parseObj;
@@ -68,15 +69,18 @@ export class AppComponent implements OnInit{
   onLogin(){
     
     this.masterService.loginCustomer(this.loginObj).subscribe((result : ApiResponseModel) => {
-      alert(result.message);
+      
       if(result.result){
-        localStorage.setItem('eCom18', JSON.stringify(result.data));
+        localStorage.setItem(Constant.LOCAL_KEY, JSON.stringify(result.data));
         this.closeLoginModel();
+        this.loggedInUserData = result.data;
+      }else{
+        alert(result.message);
       }
     });
   }
   onLogout(){
-    localStorage.removeItem('eCom18');
+    localStorage.removeItem(Constant.LOCAL_KEY);
     this.loggedInUserData = new Customer();
   }
 }
